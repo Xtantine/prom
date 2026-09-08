@@ -1,2 +1,0 @@
-# prom
-prom shi
