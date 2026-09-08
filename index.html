@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>prom.com - Find Your Perfect Match</title>
+  <style>
+    /* ==================== THEMES & VARIABLES ==================== */
+    :root {
+      /* Bright Mode (Creamy & Warm) */
+      --bg-color: #fcf8f2;
+      --card-bg: rgba(255, 249, 240, 0.85);
+      --text-color: #4a3b32;
+      --accent-color: #e88ca5;
+      --accent-hover: #d97590;
+      --secondary-accent: #f3a683;
+      --border-color: #eedcc8;
+      --glow-color: rgba(232, 140, 165, 0.4);
+      --shadow-color: rgba(180, 140, 120, 0.15);
+      --chat-bubble-self: #fce4ec;
+      --chat-bubble-other: #f0e6df;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode (Deep Purple & Glowing Violet) */
+      --bg-color: #0f0a1c;
+      --card-bg: rgba(26, 18, 48, 0.85);
+      --text-color: #f1e9ff;
+      --accent-color: #a855f7;
+      --accent-hover: #9333ea;
+      --secondary-accent: #ec4899;
+      --border-color: #3b2d59;
+      --glow-color: rgba(168, 85, 247, 0.5);
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --chat-bubble-self: #3b1f52;
+      --chat-bubble-other: #221738;
+    }
+
+    /* ==================== BASE STYLES ==================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: background-color 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Pulsing background effect */
+    .pulse-bg {
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--glow-color) 0%, transparent 60%);
+      animation: pulse 6s infinite alternate ease-in-out;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 0.3; }
+      100% { transform: scale(1.1); opacity: 0.7; }
+    }
+
+    /* ==================== UI COMPONENTS ==================== */
+    .round-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      border: 2px solid var(--border-color);
+      box-shadow: 0 10px 30px var(--shadow-color);
+      backdrop-filter: blur(10px);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .pulsing-border {
+      animation: borderPulse 3s infinite alternate;
+    }
+
+    @keyframes borderPulse {
+      0% { box-shadow: 0 0 10px var(--glow-color); }
+      100% { box-shadow: 0 0 25px var(--glow-color), 0 0 10px var(--accent-color); }
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--glow-color);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px var(--glow-color);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 18px;
+      margin: 8px 0;
+      border-radius: 20px;
+      border: 1.5px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-color);
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--glow-color);
+    }
+
+    /* ==================== NAVBAR ==================== */
+    header {
+      width: 90%;
+      max-width: 1100px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* ==================== LAYOUT & APP SECTIONS ==================== */
+    #app {
+      width: 90%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Auth Screen */
+    .auth-container {
+      max-width: 450px;
+      margin: 40px auto;
+      text-align: center;
+    }
+
+    .avatar-picker {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .avatar-option {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--border-color);
+    }
+
+    .avatar-option.selected {
+      border-color: var(--accent-color);
+      transform: scale(1.15);
+    }
+
+    /* Main Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Profile Card */
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      font-size: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--border-color);
+      margin: 0 auto 10px;
+      border: 3px solid var(--accent-color);
+    }
+
+    /* Feed Posts */
+    .post-img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-top: 10px;
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* Chats */
+    .chat-box {
+      height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 0.9rem;
+    }
+
+    .chat-bubble.self {
+      align-self: flex-end;
+      background: var(--chat-bubble-self);
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble.other {
+      align-self: flex-start;
+      background: var(--chat-bubble-other);
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Matchmaking */
+    .match-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.03);
+      margin-bottom: 10px;
+    }
+
+    .compatibility-badge {
+      background: var(--accent-color);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pulse-bg"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">💖 prom.com</div>
+    <div class="nav-btns">
+      <button onclick="toggleTheme()" id="themeBtn">🌙 Purple Mode</button>
+      <button id="logoutBtn" class="hidden" onclick="logout()">Log Out</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div id="app">
+
+    <!-- LOGIN / SIGN UP VIEW -->
+    <div id="authView" class="round-card pulsing-border auth-container">
+      <h2 style="margin-bottom: 15px;">Welcome to Prom</h2>
+      <p style="margin-bottom: 20px; opacity: 0.8;">Find your perfect match & connect 💕</p>
+
+      <form id="authForm" onsubmit="handleAuth(event)">
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        
+        <select id="gender" required>
+          <option value="" disabled selected>Select Gender</option>
+          <option value="Female">Female 🌸</option>
+          <option value="Male">Male 💙</option>
+        </select>
+
+        <label style="display:block; margin-top:10px; font-size:0.9rem;">Choose Avatar:</label>
+        <div class="avatar-picker">
+          <div class="avatar-option selected" onclick="selectAvatar(this, '👑')">👑</div>
+          <div class="avatar-option" onclick="selectAvatar(this, '🌹')">🌹</div>
+          <div class="avatar-option" onclick="selectAvatar(this, '🦋')">🦋</div>
+          <div class="avatar-option" onclick="selectAvatar(this, '✨')">✨</div>
+          <div class="avatar-option" onclick="selectAvatar(this, '🧸')">🧸</div>
+        </div>
+
+        <button type="submit" style="width: 100%; margin-top: 15px;">Enter Prom</button>
+      </form>
+    </div>
+
+    <!-- MAIN DASHBOARD (Protected View) -->
+    <div id="dashboardView" class="dashboard-grid hidden">
+      
+      <!-- LEFT COLUMN: Profile & Status -->
+      <div>
+        <div class="round-card pulsing-border" style="text-align: center;">
+          <div id="userAvatar" class="user-avatar">👑</div>
+          <h3 id="profileName">Username</h3>
+          <p id="profileGender" style="font-size:0.85rem; opacity:0.7; margin-bottom: 10px;">Gender</p>
+          
+          <textarea id="bioInput" rows="3" placeholder="Write a short bio about yourself & interests..." onchange="updateBio()"></textarea>
+          <button onclick="updateBio()" style="width: 100%; margin-top: 5px; font-size:0.8rem;">Save Bio</button>
+        </div>
+
+        <!-- DM Chat Modal/Box -->
+        <div id="dmSection" class="round-card hidden">
+          <h4>Private Chat with <span id="dmTargetName">User</span></h4>
+          <div class="chat-box" id="dmChatBox"></div>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="dmInput" placeholder="Type a message..." />
+            <button onclick="sendDM()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE COLUMN: Status & Feed -->
+      <div>
+        <!-- Create Post -->
+        <div class="round-card">
+          <h4>Share something lovely ✨</h4>
+          <textarea id="postText" rows="2" placeholder="What's on your mind?"></textarea>
+          <input type="text" id="postImage" placeholder="Optional image URL (e.g., https://picsum.photos/400/200)" />
+          <button onclick="createPost()" style="margin-top: 10px; float: right;">Post</button>
+          <div style="clear: both;"></div>
+        </div>
+
+        <!-- Posts Feed -->
+        <div id="feedContainer"></div>
+      </div>
+
+      <!-- RIGHT COLUMN: Matchmaking & World Chat -->
+      <div>
+        <!-- Matchmaking Section -->
+        <div class="round-card pulsing-border">
+          <h4>💘 Prom Matches</h4>
+          <p style="font-size:0.75rem; opacity: 0.7; margin-bottom: 12px;">Opposite gender matches ordered by compatibility score.</p>
+          <div id="matchList"></div>
+        </div>
+
+        <!-- World Chat Section -->
+        <div class="round-card">
+          <h4>🌍 World Chat</h4>
+          <div class="chat-box" id="worldChatBox"></div>
+          <div style="display:flex; gap:5px; margin-top:10px;">
+            <input type="text" id="worldInput" placeholder="Say hi to everyone..." />
+            <button onclick="sendWorldChat()">Send</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    /* ---------------- STORAGE & STATE ---------------- */
+    let currentUser = null;
+    let selectedAvatar = '👑';
+    let activeDMUser = null;
+
+    // Simulated Database in LocalStorage
+    let users = JSON.parse(localStorage.getItem('prom_users')) || [];
+    let posts = JSON.parse(localStorage.getItem('prom_posts')) || [];
+    let worldMessages = JSON.parse(localStorage.getItem('prom_world_chat')) || [
+      { sender: 'System', text: 'Welcome to the World Chat! 💕', time: '12:00' }
+    ];
+    let dms = JSON.parse(localStorage.getItem('prom_dms')) || {};
+
+    /* ---------------- THEME SWITCHER ---------------- */
+    function toggleTheme() {
+      const body = document.body;
+      const themeBtn = document.getElementById('themeBtn');
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        themeBtn.innerText = '🌙 Purple Mode';
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        themeBtn.innerText = '☀️ Cream Mode';
+      }
+    }
+
+    /* ---------------- AUTHENTICATION ---------------- */
+    function selectAvatar(element, icon) {
+      document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedAvatar = icon;
+    }
+
+    function handleAuth(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const gender = document.getElementById('gender').value;
+
+      let user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+      if (!user) {
+        // Create new user
+        user = {
+          username: username,
+          gender: gender,
+          avatar: selectedAvatar,
+          bio: "Looking for my match on prom.com! ✨",
+          interests: ["dance", "music", "romance"]
+        };
+        users.push(user);
+        saveUsers();
+      }
+
+      currentUser = user;
+      document.getElementById('authView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+
+      loadUserProfile();
+      renderFeed();
+      renderMatches();
+      renderWorldChat();
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('authView').classList.remove('hidden');
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+    }
+
+    /* ---------------- PROFILE MANAGEMENT ---------------- */
+    function loadUserProfile() {
+      document.getElementById('profileName').innerText = currentUser.username;
+      document.getElementById('profileGender').innerText = `Gender: ${currentUser.gender}`;
+      document.getElementById('userAvatar').innerText = currentUser.avatar;
+      document.getElementById('bioInput').value = currentUser.bio;
+    }
+
+    function updateBio() {
+      const bioText = document.getElementById('bioInput').value;
+      currentUser.bio = bioText;
+      
+      // Update user in storage array
+      const idx = users.findIndex(u => u.username === currentUser.username);
+      if (idx !== -1) users[idx] = currentUser;
+      saveUsers();
+      
+      // Re-trigger matchmaking to recalculate compatibility score based on new bio words
+      renderMatches();
+    }
+
+    /* ---------------- POSTS / FEED ---------------- */
+    function createPost() {
+      const text = document.getElementById('postText').value;
+      const img = document.getElementById('postImage').value;
+
+      if (!text && !img) return;
+
+      const newPost = {
+        id: Date.now(),
+        author: currentUser.username,
+        avatar: currentUser.avatar,
+        text: text,
+        image: img,
+        likes: 0,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      posts.unshift(newPost);
+      localStorage.setItem('prom_posts', JSON.stringify(posts));
+
+      document.getElementById('postText').value = '';
+      document.getElementById('postImage').value = '';
+      renderFeed();
+    }
+
+    function renderFeed() {
+      const container = document.getElementById('feedContainer');
+      container.innerHTML = '';
+
+      posts.forEach(post => {
+        const postEl = document.createElement('div');
+        postEl.className = 'round-card';
+        postEl.innerHTML = `
+          <div class="post-header">
+            <span style="font-size:1.5rem;">${post.avatar}</span>
+            <div>
+              <strong>${post.author}</strong>
+              <div style="font-size:0.75rem; opacity:0.6;">${post.timestamp}</div>
+            </div>
+          </div>
+          <p>${post.text}</p>
+          ${post.image ? `<img src="${post.image}" class="post-img" alt="Post Image" onerror="this.style.display='none'" />` : ''}
+        `;
+        container.appendChild(postEl);
+      });
+    }
+
+    /* ---------------- MATCHMAKING SYSTEM ---------------- */
+    function calculateCompatibility(user1, user2) {
+      let score = 60; // Base score
+
+      // Bio text similarity simple matching
+      const words1 = user1.bio.toLowerCase().split(" ");
+      const words2 = user2.bio.toLowerCase().split(" ");
+      const matches = words1.filter(w => w.length > 3 && words2.includes(w));
+      score += matches.length * 10;
+
+      // Add controlled randomness for dynamic feel
+      score += (user1.username.length + user2.username.length) % 15;
+
+      return Math.min(score, 99); // Max 99%
+    }
+
+    function renderMatches() {
+      const container = document.getElementById('matchList');
+      container.innerHTML = '';
+
+      // Match logic: Filter for opposite gender
+      const potentialMatches = users.filter(u => 
+        u.username !== currentUser.username && u.gender !== currentUser.gender
+      );
+
+      if (potentialMatches.length === 0) {
+        container.innerHTML = `<p style="font-size:0.85rem; opacity:0.6;">No opposite gender matches available right now. Sign up another account to test!</p>`;
+        return;
+      }
+
+      potentialMatches.forEach(match => {
+        const matchScore = calculateCompatibility(currentUser, match);
+
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.4rem;">${match.avatar}</span>
+            <div>
+              <strong>${match.username}</strong>
+              <div style="font-size:0.7rem; opacity:0.7;">${match.gender}</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <span class="compatibility-badge">${matchScore}% Match</span>
+            <button onclick="openDM('${match.username}')" style="padding: 4px 10px; font-size:0.75rem; margin-top:4px; display:block;">Chat</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ---------------- WORLD CHAT & DM SYSTEM ---------------- */
+    function sendWorldChat() {
+      const input = document.getElementById('worldInput');
+      if (!input.value.trim()) return;
+
+      worldMessages.push({
+        sender: currentUser.username,
+        text: input.value,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      localStorage.setItem('prom_world_chat', JSON.stringify(worldMessages));
+      input.value = '';
+      renderWorldChat();
+    }
+
+    function renderWorldChat() {
+      const box = document.getElementById('worldChatBox');
+      box.innerHTML = '';
+      worldMessages.forEach(msg => {
+        const isSelf = msg.sender === currentUser?.username;
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isSelf ? 'self' : 'other'}`;
+        bubble.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}`;
+        box.appendChild(bubble);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function openDM(targetUsername) {
+      activeDMUser = targetUsername;
+      document.getElementById('dmSection').classList.remove('hidden');
+      document.getElementById('dmTargetName').innerText = targetUsername;
+      renderDMs();
+    }
+
+    function sendDM() {
+      const input = document.getElementById('dmInput');
+      if (!input.value.trim() || !activeDMUser) return;
+
+      const chatKey = [currentUser.username, activeDMUser].sort().join('_');
+      if (!dms[chatKey]) dms[chatKey] = [];
+
+      dms[chatKey].push({
+        sender: currentUser.username,
+        text: input.value
+      });
+
+      localStorage.setItem('prom_dms', JSON.stringify(dms));
+      input.value = '';
+      renderDMs();
+    }
+
+    function renderDMs() {
+      if (!activeDMUser) return;
+      const chatKey = [currentUser.username, activeDMUser].sort().join('_');
+      const messages = dms[chatKey] || [];
+      const box = document.getElementById('dmChatBox');
+      box.innerHTML = '';
+
+      messages.forEach(msg => {
+        const isSelf = msg.sender === currentUser.username;
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isSelf ? 'self' : 'other'}`;
+        bubble.innerText = msg.text;
+        box.appendChild(bubble);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function saveUsers() {
+      localStorage.setItem('prom_users', JSON.stringify(users));
+    }
+  </script>
+</body>
+</html>
